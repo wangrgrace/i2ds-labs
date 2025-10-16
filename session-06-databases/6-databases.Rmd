@@ -170,7 +170,14 @@ b) Which airline has the most flights with unregistered planes?
 :::
 
 ```{r}
+flights |>
+  anti_join(planes, by = "tailnum") |>
+  count()
 
+flights |>
+  anti_join(planes, by = "tailnum") |>
+  count(carrier, sort = TRUE) |> # either order is fine
+  left_join(airlines, by = "carrier")
 ```
 
 
@@ -334,7 +341,7 @@ flights_db |> dplyr::filter(dep_delay > 240)
 
 ------------------------------------------------------------------------
 
-## Summary Statisitics
+## Summary Statistics
 
 Or immediately generate summary statistics for different groups:
 
@@ -408,7 +415,16 @@ b) Add the `airports` table to the database with the appropriate index.
 :::
 
 ```{r}
-
+# faa
+dplyr::copy_to(
+  dest = con, 
+  df = nycflights13::airports, 
+  name = "airports", # we create the "weather" table
+  temporary = FALSE, 
+  indexes = list(
+    c("faa")
+  )
+)
 ```
 
 
@@ -523,7 +539,15 @@ b) Collect the results into a local dataframe.
 :::
 
 ```{r}
+airlines_db <- tbl(con, "airlines")
 
+jan1_flights <- flights_db |>
+  filter(month == 1, day == 1) |>
+  left_join(airlines_db, by = "carrier") |>
+  select(carrier, name, flight) 
+
+jan1_flights_local <- jan1_flights |> collect()
+jan1_flights_local
 ```
 
 
