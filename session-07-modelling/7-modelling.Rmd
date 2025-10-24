@@ -198,7 +198,7 @@ reg1$coefficients == reg2$coefficients
 ```
 
 :::{.alert-info .pad-box}
-**Excercise 1**
+**Exercise 1**
 Using the two-step approach, create formulas that perform the following regressions, in each case run the model and inspect the output:
 
 - Regress `life_expectancy` on `gdp`, `population`, and `alcohol`
@@ -208,7 +208,13 @@ Using the two-step approach, create formulas that perform the following regressi
 - Regress `life_expectancy` on `gdp`, the square of `gdp` and the log of `population`
 
 ```{r, echo= FALSE}
-# your code here
+reg_1 <- lm(life_expectancy ~ gdp + population + alcohol, data = life_expec_dat)
+
+reg_2 <- lm(life_expectancy ~ gdp * population + alcohol, data = life_expec_dat)
+
+gdp_squared <- (life_expec_dat$gdp)^2
+pop_log <- log(life_expec_dat$population)
+reg_3 <- lm(life_expectancy ~ gdp + gdp_squared + pop_log, data = life_expec_dat)
 ```
 :::
 
@@ -331,7 +337,9 @@ length(multiv_model_out)
 Look at the `multiv_model_out` object that you have just created. Try to get a sense of the structure of the output. Pick three different models and inspect their output using the `summary()` function. Consider which model you think is "best" and why.
 
 ```{r, echo= FALSE}
-# your code here
+summary(multiv_model_out[[1]]) # life_expectancy ~ gdp
+summary(multiv_model_out[[4]]) # life_expectancy ~ bmi
+summary(multiv_model_out[[31]]) # life_expectancy ~ gdp + percentage_expenditure + alcohol + bmi + hiv_aids
 ```
 :::
 
@@ -609,7 +617,27 @@ Our implementation of `modelsummary` above is good, but it can be improved furth
 
 
 ```{r, echo= FALSE}
+mod_table <- modelsummary::modelsummary(multiv_model_out[29:31], 
+                                        output = "kableExtra",
+                                        fmt = fmt_significant(2), 
+                                        estimate  = "{estimate}",
+                                        statistic = "conf.int",
+                                        coef_omit = "Intercept",
+                                        coef_rename=c("gdp"="Gdp", 
+                                                      "bmi"="Avg. BMI", 
+                                                      "alcohol" = "Alcohol Consum.",
+                                                      "hiv_aids"= "HIV cases", 
+                                                      "percentage_expenditure" = "Health Expenditure (% of GDP)",
+                                                      "life_expectancy" = "Life Expectancy"),
+                                        gof_omit = 'DF|Deviance|Log.Lik|AIC|BIC',
+                                        title = 'An Improved Regression Table',
+                                        notes = "Source: WHO",
+                                        escape = FALSE) |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F, fixed_thead = T) |> 
+  row_spec(3, color = 'red') |>
+  row_spec(5, background = 'lightblue')
 
+mod_table
 ```  
 :::
 ---
