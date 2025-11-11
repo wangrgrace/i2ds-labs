@@ -206,7 +206,18 @@ ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
 ```
 
 ```{r}
-# YOUR CODE HERE
+advanced_scatter <- ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, color = species, shape = species)) +
+  geom_point() +
+  labs(
+    title = "Body mass and flipper length",
+    subtitle = "Dimensions for Adelie, Chinstrap, and Gentoo Penguins",
+    x = "Flipper length (mm)", y = "Body mass (g)",
+    color = "Species", shape = "Species"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+advanced_scatter
 ```
 
 
@@ -254,7 +265,8 @@ What would happen if we specified 5 bins? Try it out.
 
 
 ```{r}
-# YOUR CODE HERE
+ggplot(df, aes(x = lifeExp)) +
+  geom_histogram(bins = 5)
 ```
 
 
@@ -325,19 +337,38 @@ Create a histogram showing the distribution of penguin body mass using the `peng
 
 1. Choose an appropriate number of bins (for example, start with bins = 15 and adjust).
 
-1. Set a fill color using fill = "red" or a hex code such as "#FF6666".
+2. Set a fill color using fill = "red" or a hex code such as "#FF6666".
 
-1. Experiment with different geoms by replacing geom_histogram() with options like geom_density(), geom_bar(), or others.
+3. Experiment with different geoms by replacing geom_histogram() with options like geom_density(), geom_bar(), or others.
 
 ```{r}
-# YOUR CODE HERE
+ggplot(penguins, aes(x = body_mass_g)) +
+  geom_histogram(bins = 20, fill = "brown") +
+  theme_minimal()
 
+ggplot(penguins, aes(x = body_mass_g)) +
+  geom_density(fill = "brown") +
+  theme_minimal()
+
+ggplot(penguins, aes(x = body_mass_g)) +
+  geom_bar(fill = "brown") +
+  theme_minimal()
 ```
 
 1. Now, look for a variable in the dataset that can be used to meaningfully group body mass. Use that variable to create a box plot or violin plot of body mass.
 
 ```{r}
-# YOUR CODE HERE
+box <- ggplot(penguins, aes(x = species, y = body_mass_g)) +
+  geom_boxplot(fill = "brown") +
+  theme_minimal() +
+  coord_flip()
+box
+
+violin <- ggplot(penguins, aes(x = species, y = body_mass_g)) +
+  geom_violin(fill = "brown", trim = F) +
+  theme_minimal() +
+  coord_flip()
+violin
 ```
 
 
@@ -670,7 +701,16 @@ ggplot(subset(diff07, continent == "Europe" & year == 2007),
 Create a scatter plot to explore the relationship between `flipper_length_mm` and `body_mass_g`. Then, color by a grouping variable (of your choice) and add linear trend lines.
 
 ```{r}
-# YOUR CODE HERE
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
+  geom_point() +
+  geom_smooth(method = "lm", inherit.aes = F, aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
+  scale_color_colorblind()
+
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
+  geom_point(alpha = 0.6, size = 1.2) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(x = "Flipper length (mm)", y = "Body mass (g)", color = "Species") +
+  theme_minimal()
 ```
 
 ---
