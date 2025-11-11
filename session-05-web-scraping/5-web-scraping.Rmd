@@ -294,7 +294,6 @@ spotify_table |>
   summarise(songs_n = n(), 
             total_streams_billions = sum(streams_billions)) |> 
   arrange(desc(total_streams_billions))
-
 ```
 
 
