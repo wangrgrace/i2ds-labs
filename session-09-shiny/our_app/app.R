@@ -19,7 +19,7 @@ all_movies <- dplyr::inner_join(omdb, tomatoes, by = "ID") %>%
   dplyr::select(ID, imdbID, Title, Year, Rating_m = Rating.x, Runtime, Released,
                 Director, Writer, imdbRating, imdbVotes, Language, Country, Oscars,
                 Rating = Rating.y, Meter, Reviews, Fresh, Rotten, userMeter, userRating, userReviews,
-                BoxOffice, Production, Cast)
+                BoxOffice, Production, Cast, Genre) ### Question 3
 
 # Variables that can be put on the x and y axes
 axis_vars <- c(
@@ -63,6 +63,13 @@ ui <- fluidPage(
                          0, 4, 0, step = 1),
              sliderInput("boxoffice", "Dollars at Box Office (millions)",
                          0, 800, c(0, 800), step = 1),
+             ### Question 3:
+             selectInput("genre", "Genre (a movie can have multiple genres)",
+                         c("All", "Action", "Adventure", "Animation", "Biography", "Comedy",
+                           "Crime", "Documentary", "Drama", "Family", "Fantasy", "History",
+                           "Horror", "Music", "Musical", "Mystery", "Romance", "Sci-Fi",
+                           "Short", "Sport", "Thriller", "War", "Western")
+             ),
              textInput("director", "Director name contains (e.g., Miyazaki)"),
              textInput("cast", "Cast names contains (e.g. Tom Hanks)")
            ),
@@ -118,11 +125,17 @@ server <- function(input, output, session) {
       ) %>%
       dplyr::arrange(Oscars)
     
+    ### Optional: filter by Genre - Question 3
+    if (input$genre != "All") {
+      genre <- paste0("%", input$genre, "%")
+      m <- m %>% filter(Genre %like% genre)
+    }
+    
     # Optional: filter by director
     if (!is.null(input$director) && input$director != "") {
       # As our data is an SQL database, we need to use SQL LIKE syntax to match patterns in strings
       # This works similarly to Regular Expressions, but with % as a wildcard for any number of characters
-      # Hint: for excercise 3 you can just copy this block of code and change it to match the inputted Genre.
+      # Hint: for exercise 3 you can just copy this block of code and change it to match the inputted Genre.
       director <- paste0("%", input$director, "%")
       m <- m %>% filter(Director %like% director)
     }
@@ -173,6 +186,7 @@ server <- function(input, output, session) {
         y = input$yvar,
         fill = "has_oscar",
         colour = "has_oscar",
+        size = "BoxOffice", ### Question 2
         text = "paste0(
         '<b>', Title, '</b><br>',
         'Year: ', Year, '<br>',
@@ -181,11 +195,13 @@ server <- function(input, output, session) {
       )
     ) +
       geom_point(shape = 21, alpha = 0.7) +
-      scale_fill_manual(values = c("Yes" = "orange", "No" = "gray"),name = "Won an Oscar") +
-      scale_color_manual(values = c("Yes" = "orange", "No" = "gray"),guide = "none") +
+      scale_size(range = c(1,10), name = "Box Office", guide = "none") + ### Question 2
+      scale_fill_manual(values = c("Yes" = "orange", "No" = "gray"), name = "Won an Oscar") +
+      scale_color_manual(values = c("Yes" = "orange", "No" = "gray"), guide = "none") +
       labs(
         x = xvar_name,
-        y = yvar_name
+        y = yvar_name,
+        title = paste(xvar_name, "vs", yvar_name) ### Question 1
       ) +
       theme_minimal()
     
