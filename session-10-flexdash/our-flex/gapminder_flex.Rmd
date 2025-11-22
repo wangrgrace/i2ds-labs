@@ -14,22 +14,64 @@ library(rnaturalearth)
 library(dplyr)
 library(sf)
 library(shiny)
+library(gapminder)
 
 # Color palette
-pal <- colorNumeric("YlOrRd", domain = NULL)
+pal <- colorNumeric("YlOrRd", domain = range(gapminder$lifeExp, na.rm = TRUE))
 
 # Load African country boundaries
-africa <- ne_countries(continent = "Africa", returnclass = "sf")
+africa <- ne_countries(continent = "Africa", returnclass = "sf") |>
+  mutate(name_custom = ifelse(sov_a3 == "CIV", "Cote d'Ivoire", name_sort)) |>
+  mutate(name_custom = ifelse(sov_a3 == "SWZ", "Swaziland", name_custom)) |>
+  mutate(name_custom = ifelse(sov_a3 == "EGY", "Egypt", name_custom))
 ```
 
 
+```{r}
+# Plot 
+gapminder_africa <- gapminder |>
+  filter(continent == "Africa", year == 2007)
+
+combined_data <- africa |>
+  left_join(gapminder_africa, by = c("name_sort" = "country"))
+```
+
+Column {.sidebar}
+-----------------------
+```{r}
+selectInput(
+  "year",
+  "Select Year:",
+  choices = unique(gapminder$year),
+  selected = 2007
+)
+```
+
+Column {data-width=650} # otherwise everything goes into the sidebar
+-----------------------
 
 ### African Countries 
 ```{r}
-# Plot 
-leaflet(africa) |>
-  addTiles() |>
-  addPolygons()
+renderLeaflet({
+  combined_data <- africa |>
+    left_join(
+      gapminder |> filter(continent == "Africa", year == input$year),
+      by = c("name_custom" = "country")
+      )
+  
+  leaflet(combined_data) |>
+    addTiles() |>
+    addPolygons(
+      fillColor = ~pal(lifeExp),
+      fillOpacity = 0.7
+    ) |>
+    addLegend(
+      pal = pal,
+      values = ~lifeExp,
+      title = "Interactive Africa Map",
+      position = "bottomleft"
+  )
+})
 ```
 
 
