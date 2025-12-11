@@ -140,7 +140,6 @@ parsed_url <- rvest::read_html("https://en.wikipedia.org/wiki/Cologne",
 parsed_url |> 
   rvest::html_element(xpath = '//p[76]') |> 
   rvest::html_text()
-
 ```
 
 There are many ways to get the same content:
