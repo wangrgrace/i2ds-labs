@@ -1,0 +1,82 @@
+---
+title: "11/25 Practice"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(rvest)
+library(stringr)
+library(janitor)
+library(dplyr)
+library(fs)
+library(robotstxt)
+library(httr)
+library(httr2)
+library(jsonlite)
+library(knitr)
+```
+
+## GitHub Documents
+
+This is an R Markdown format used for publishing markdown documents to GitHub. When you click the **Knit** button all R code chunks are run and a markdown file (.md) suitable for publishing to GitHub is generated.
+
+## Including Code
+
+You can include R code in the document as follows:
+
+```{r cars}
+url <- "https://books.toscrape.com/index.html"
+url_p <- read_html(url)
+
+titles <- url_p |> 
+  html_elements(xpath = "//article[@class='product_pod']/h3/a") |>
+  html_attr("title")
+
+prices <- url_p |>
+  html_elements(xpath = "//article[@class='product_pod']/h3/div[@class='product_price']/p[@class='price_color']") |>
+  html_text2()
+
+rating <- url_p |>
+  html_elements(xpath = "//article[@class='product_pod']/p[contains(@class, 'star-rating')]") |>
+  html_attr("title") |>
+  str_replace("star-rating", "") |>
+  factor(levels = c("One", "Two", "Three", "Four", "Five"), labels = 1:5)
+
+book_links <- url_p |>
+  html_elements(xpath = "//article[@class='product_pod']/h3/a") |>
+  html_attr("href") |>
+  paste0("https://books.toscrape.com/", .)
+
+get_stock <- function(link) {
+  book_page <- read_html(url)
+  stock_text <- book_page |>
+    html_element(xpath = "//table[@class='table table-striped']/tr[th[text()='Availability']]/td") |>
+    html_text2()
+  stock_no <- str_extract(stock_text, "\\d+")
+  return(as.integer(stock_no))
+}
+
+stock <- map_int(book_links, get_stock)
+
+df <- data.frame(
+  Title = titles,
+  Price = prices,
+  Rating = ratings,
+  Stock = stock
+)
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
